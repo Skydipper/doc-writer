@@ -9,7 +9,7 @@ cache:
   - "node_modules"
 env:
   global:
-    - CC_TEST_REPORTER_ID=b20424bf38e9d64206d37fc2633b573f696f7b7e423cee11d241ec12a2bf27cc
+    - CC_TEST_REPORTER_ID=584535b5281be348129a3e6f2054761470b903a9d1e7c49e0aeaaaf4c247c3be
     - NODE_ENV=test
     - ELASTIC_URL=127.0.0.1:9000
     - RABBITMQ_URL=amqp://0.0.0.0:5672
