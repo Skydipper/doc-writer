@@ -1,16 +1,12 @@
 const logger = require('logger');
 const config = require('config');
 const amqp = require('amqplib');
-const docImporter = require('doc-importer-messages');
-const {
-    STATUS_QUEUE
-} = require('app.constants');
-
+const docImporter = require('rw-doc-importer-messages');
 
 class StatusQueueService {
 
     constructor() {
-        logger.info(`Connecting to queue ${STATUS_QUEUE}`);
+        logger.info(`Connecting to queue ${config.get('queues.status')}`);
         try {
             this.init().then(() => {
                 logger.info('Connected');
@@ -33,12 +29,12 @@ class StatusQueueService {
             let numTries = 0;
             const interval = setInterval(async () => {
                 try {
-                    numTries++;
+                    numTries += 1;
                     logger.info('Sending message', msg);
-                    const data = await this.channel.assertQueue(STATUS_QUEUE, {
+                    await this.channel.assertQueue(config.get('queues.status'), {
                         durable: true
                     });
-                    this.channel.sendToQueue(STATUS_QUEUE, Buffer.from(JSON.stringify(msg)));
+                    this.channel.sendToQueue(config.get('queues.status'), Buffer.from(JSON.stringify(msg)));
                     clearInterval(interval);
                     resolve();
                 } catch (err) {
@@ -52,17 +48,11 @@ class StatusQueueService {
         });
     }
 
-    async sendIndexCreated(taskId) {
-        logger.debug('Sending index created message of taskId', taskId);
-        await this.sendMessage(docImporter.status.createMessage(docImporter.status.MESSAGE_TYPES.STATUS_INDEX_CREATED, {
-            taskId
-        }));
-    }
-
-    async sendWriteCorrect(taskId, withErrors, detail) {
-        logger.debug('Sending write correct message of taskId', taskId, withErrors, detail);
+    async sendWriteCorrect(taskId, index, withErrors, detail) {
+        logger.debug('Sending write correct message of taskId', taskId, index, withErrors, detail);
         await this.sendMessage(docImporter.status.createMessage(docImporter.status.MESSAGE_TYPES.STATUS_WRITTEN_DATA, {
             taskId,
+            index,
             withErrors,
             detail
         }));

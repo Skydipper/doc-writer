@@ -13,13 +13,11 @@ class ElasticService {
             log: 'error'
         });
         setInterval(() => {
-            // logger.debug('Doing ping to elastic');
             this.client.ping({
-                // ping usually has a 3000ms timeout
                 requestTimeout: 10000
-            }, function (error) {
+            }, (error) => {
                 if (error) {
-                    logger.error('elasticsearch cluster is down!');
+                    logger.error('Elasticsearch cluster is down!');
                     process.exit(1);
                 }
             });
@@ -29,8 +27,8 @@ class ElasticService {
     async saveBulk(index, data) {
 
         const exists = await new Promise((resolve, reject) => {
-            logger.debug('Checking if exist index');
-            this.client.indices.exists({ index }, function (err, res) {
+            logger.debug(`Checking if index ${index} exists`);
+            this.client.indices.exists({ index }, (err, res) => {
                 logger.info('Response', res);
                 if (err) {
                     logger.error(err);
@@ -41,12 +39,12 @@ class ElasticService {
             });
         });
         if (!exists) {
-            logger.error('Index not exists');
+            logger.error(`Index ${index} does not exist`);
             return false;
         }
         return new Promise((resolve, reject) => {
-            logger.debug('Sending data in elastic');
-            this.client.bulk({ body: data }, function (err, res) {
+            logger.debug('Sending data to Elasticsearch');
+            this.client.bulk({ body: data }, (err, res) => {
                 if (err) {
                     logger.error(err);
                     reject(new ElasticError(err));
